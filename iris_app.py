@@ -10,7 +10,7 @@ from sklearn.svm import SVC
 
 
 # Loading the dataset.
-iris_df = pd.read_csv("https://student-datasets-bucket.s3.ap-south-1.amazonaws.com/whitehat-ds-datasets/iris-species.csv")
+iris_df = pd.read_csv("https://raw.githubusercontent.com/whitehatjr-test/iris-species/main/iris-species.csv")
 iris_df.head()
 
 # Adding a column in the Iris DataFrame to resemble the non-numeric 'Species' column as numeric using 'map()' function.
