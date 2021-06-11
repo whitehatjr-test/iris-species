@@ -7,11 +7,12 @@ import seaborn as sns
 import streamlit as st
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
-
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 
 # Loading the dataset.
 iris_df = pd.read_csv("https://raw.githubusercontent.com/whitehatjr-test/iris-species/main/iris-species.csv")
-iris_df.head()
+
 
 # Adding a column in the Iris DataFrame to resemble the non-numeric 'Species' column as numeric using 'map()' function.
 # Creating the numeric target column 'Label' to 'iris_df' using 'map()'.
@@ -29,13 +30,19 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.33, rand
 # Creating the SVC model and storing the accuracy score in a variable 'score'
 svc_model = SVC(kernel = 'linear')
 svc_model.fit(X_train, y_train)
-score = svc_model.score(X_train, y_train)
+
+rf_clf = RandomForestClassifier(n_jobs = -1, n_estimators = 100)
+rf_clf.fit(X_train, y_train)
+
+
+log_reg = LogisticRegression(n_jobs = -1)
+log_reg.fit(X_train, y_train)
 
 
 @st.cache()
 # Create a function 'prediction()' which accepts SepalLength, SepalWidth, PetalLength, PetalWidth as input and returns species name.
-def prediction(SepalLength, SepalWidth, PetalLength, PetalWidth):
-  species=svc_model.predict([[SepalLength, SepalWidth, PetalLength, PetalWidth]])
+def prediction(model,SepalLength, SepalWidth, PetalLength, PetalWidth):
+  species=model.predict([[SepalLength, SepalWidth, PetalLength, PetalWidth]])
   species= int(species)
   if species == 0:
     return "Iris-setosa"
@@ -44,20 +51,28 @@ def prediction(SepalLength, SepalWidth, PetalLength, PetalWidth):
   else:
     return "Iris-versicolor"
 
-  return species
 
 
-
-st.title("Iris Flower Species Prediction App")      
+st.sidebar.title("Iris Flower Species Prediction App")      
 
   
-s_length = st.slider("Sepal Length",0.0,10.0)
-s_width = st.slider("Sepal Width",0.0,10.0)
-p_length = st.slider("Petal Length",0.0,10.0)
-p_width = st.slider("Petal Width",0.0,10.0)
+s_length = st.sidebar.slider("Sepal Length",0.0,10.0)
+s_width = st.sidebar.slider("Sepal Width",0.0,10.0)
+p_length = st.sidebar.slider("Petal Length",0.0,10.0)
+p_width = st.sidebar.slider("Petal Width",0.0,10.0)
+
+classifier = st.sidebar.selectbox("Classifier",('Support Vector Machine', 'Logistic Regression', 'Random Forest Classifier'))
 
 
-if st.button("Predict"):
-    species_type = prediction(s_length, s_width, p_length, p_width)
+if st.sidebar.button("Predict"):
+    if classifier =='Support Vector Machine':
+        species_type = prediction(svc_model, s_length, s_width, p_length, p_width)
+        score = svc_model.score(X_train, y_train)
+    elif classifier =='Logistic Regression':
+        species_type = prediction(log_reg, s_length, s_width, p_length, p_width)
+        score = log_reg.score(X_train, y_train)
+    else:
+        species_type = prediction(rf_clf, s_length, s_width, p_length, p_width)
+        score = rf_clf.score(X_train, y_train)
     st.write("Species predicted:", species_type)
     st.write("Accuracy score of this model is:", score)
